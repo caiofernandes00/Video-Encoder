@@ -2,6 +2,7 @@ package domain_test
 
 import (
 	"encoder/domain"
+	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -32,6 +33,6 @@ func Test_ValidateEmptyJob(t *testing.T) {
 }
 
 func prepareValidVideo() *domain.Video {
-	video, _ := domain.NewVideo("fake-resource", "fake-filepath")
+	video, _ := domain.NewVideo("fake-resource", "fake-filepath", uuid.NewV4().String())
 	return video
 }

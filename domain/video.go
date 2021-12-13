@@ -18,8 +18,9 @@ type Video struct {
 	job        []*Job    `valid:"-" gorm:"ForeignKey:VideoID"`
 }
 
-func NewVideo(resourceId string, filePath string) (*Video, error) {
+func NewVideo(resourceId string, filePath string, id string) (*Video, error) {
 	video := Video{
+		ID:         id,
 		ResourceID: resourceId,
 		FilePath:   filePath,
 	}
@@ -34,7 +35,9 @@ func NewVideo(resourceId string, filePath string) (*Video, error) {
 }
 
 func (video *Video) prepare() {
-	video.ID = uuid.NewV4().String()
+	if video.ID == "" {
+		video.ID = uuid.NewV4().String()
+	}
 	video.CreatedAt = time.Now()
 }
 
