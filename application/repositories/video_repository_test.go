@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func Test_NewVideRepositoryDbInsert(t *testing.T) {
+func Test_VideRepositoryDbInsert(t *testing.T) {
 	db := database.NewDbTest()
 	defer db.Close()
 
