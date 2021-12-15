@@ -20,9 +20,11 @@ type Database struct {
 }
 
 const (
-	DbTypeTest = "sqlite3"
-	TestEnv    = "Test"
-	DsnTest    = ":memory:"
+	DbTypeTest    = "sqlite3"  // os.GetEnv("DB_TYPE_TEST")
+	TestEnv       = "Test"     // os.GetEnv("DB_TYPE_TEST")
+	DsnTest       = ":memory:" // os.GetEnv("DSN_TEST")
+	Debug         = true       // os.GetEnv("DEBUG")
+	AutoMigrateDb = true       // os.GetEnv("AUTO_MIGRATE_DB")
 )
 
 func NewDb() *Database {
@@ -34,8 +36,8 @@ func NewDbTest() *gorm.DB {
 	dbInstance.Env = TestEnv
 	dbInstance.DbTypeTest = DbTypeTest
 	dbInstance.DsnTest = DsnTest
-	dbInstance.AutoMigrateDb = true
-	dbInstance.Debug = true
+	dbInstance.AutoMigrateDb = AutoMigrateDb
+	dbInstance.Debug = Debug
 
 	connection, err := dbInstance.Connect()
 
