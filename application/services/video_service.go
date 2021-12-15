@@ -4,6 +4,7 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	"encoder/application/repositories"
+	"encoder/application/utils"
 	"encoder/domain"
 	"github.com/joho/godotenv"
 	"io/ioutil"
@@ -18,11 +19,10 @@ type VideoService struct {
 }
 
 const (
-	LocalStoragePath = "LOCAL_STORAGE_PATH"
-	FragmentCommand  = "mp4fragment"
-	EncodeCommand    = "mp4dash"
-	Mp4              = ".mp4"
-	Frag             = ".frag"
+	FragmentCommand = "mp4fragment"
+	EncodeCommand   = "mp4dash"
+	Mp4             = ".mp4"
+	Frag            = ".frag"
 )
 
 func init() {
@@ -55,7 +55,7 @@ func (v *VideoService) Download(bucketname string) error {
 		return err
 	}
 
-	file, err := os.Create(os.Getenv(LocalStoragePath) + "/" + v.Video.ID + ".mp4")
+	file, err := os.Create(os.Getenv(utils.LocalStoragePath) + "/" + v.Video.ID + ".mp4")
 	if err != nil {
 		return err
 	}
@@ -72,8 +72,8 @@ func (v *VideoService) Download(bucketname string) error {
 }
 
 func (v *VideoService) Fragment() error {
-	source := os.Getenv(LocalStoragePath) + "/" + v.Video.ID + Mp4
-	target := os.Getenv(LocalStoragePath) + "/" + v.Video.ID + Frag
+	source := os.Getenv(utils.LocalStoragePath) + "/" + v.Video.ID + Mp4
+	target := os.Getenv(utils.LocalStoragePath) + "/" + v.Video.ID + Frag
 
 	cmd := exec.Command(FragmentCommand, source, target)
 	output, err := cmd.CombinedOutput()
@@ -86,7 +86,7 @@ func (v *VideoService) Fragment() error {
 }
 
 func (v *VideoService) Encode() error {
-	targetDir := os.Getenv(LocalStoragePath) + "/" + v.Video.ID
+	targetDir := os.Getenv(utils.LocalStoragePath) + "/" + v.Video.ID
 
 	err := os.Mkdir(targetDir, os.ModePerm)
 	if err != nil {
@@ -106,19 +106,19 @@ func (v *VideoService) Encode() error {
 
 func (v *VideoService) Finish() error {
 
-	err := os.Remove(os.Getenv(LocalStoragePath) + "/" + v.Video.ID + Mp4)
+	err := os.Remove(os.Getenv(utils.LocalStoragePath) + "/" + v.Video.ID + Mp4)
 	if err != nil {
 		log.Println("error removing mp4", v.Video.ID+Mp4, " with error: ", err)
 		return err
 	}
 
-	err = os.Remove(os.Getenv(LocalStoragePath) + "/" + v.Video.ID + Frag)
+	err = os.Remove(os.Getenv(utils.LocalStoragePath) + "/" + v.Video.ID + Frag)
 	if err != nil {
 		log.Println("error removing mp4", v.Video.ID+Frag, " with error: ", err)
 		return err
 	}
 
-	err = os.RemoveAll(os.Getenv(LocalStoragePath) + "/" + v.Video.ID)
+	err = os.RemoveAll(os.Getenv(utils.LocalStoragePath) + "/" + v.Video.ID)
 	if err != nil {
 		log.Println("error removing", v.Video.ID, "folder with error: ", err)
 		return err
@@ -129,7 +129,7 @@ func (v *VideoService) Finish() error {
 }
 
 func removeVideoFile(filename string) error {
-	err := os.Remove(os.Getenv(LocalStoragePath) + "/" + filename)
+	err := os.Remove(os.Getenv(utils.LocalStoragePath) + "/" + filename)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func removeVideoFile(filename string) error {
 func encodeCommands(v *VideoService, targetDir string) []string {
 	var cmdArgs []string
 
-	cmdArgs = append(cmdArgs, os.Getenv(LocalStoragePath)+"/"+v.Video.ID+Frag)
+	cmdArgs = append(cmdArgs, os.Getenv(utils.LocalStoragePath)+"/"+v.Video.ID+Frag)
 	cmdArgs = append(cmdArgs, "--use-segment-timeline")
 	cmdArgs = append(cmdArgs, "-o")
 	cmdArgs = append(cmdArgs, targetDir)
