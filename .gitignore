@@ -1,2 +1,4 @@
 pkg
 *credential.json*
+.idea
+.vscode
