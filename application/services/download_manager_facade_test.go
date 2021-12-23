@@ -15,20 +15,11 @@ const (
 	BucketName = "video-encoder-test-bkt"
 )
 
-func Test_VideoServiceDownload(t *testing.T) {
+func Test_DownloadManagerFacadeService(t *testing.T) {
 	video, repo := prepare()
 
-	videoService := services.NewVideoService(video, repo)
-	err := videoService.Download(BucketName)
-	require.Nil(t, err)
-
-	err = videoService.Fragment()
-	require.Nil(t, err)
-
-	err = videoService.Encode()
-	require.Nil(t, err)
-
-	err = videoService.Finish()
+	downloadManagerFacadeService := services.NewDownloadManagerFacadeService()
+	err = downloadManagerFacadeService.Execute()
 	require.Nil(t, err)
 }
 
