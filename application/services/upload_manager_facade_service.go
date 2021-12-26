@@ -1,19 +1,19 @@
 package services
 
-type UploadManagerUseCase interface {
+import uploadService "encoder/application/services/upload_service"
+
+type UploadManagerFacadeUseCase interface {
+	Execute() error
 }
 
-type UploadManagerService struct {
-	Paths        []string
-	VideoPath    string
-	OutputBucket string
-	Errors       []string
+type UploadManagerFacadeService struct {
+	UploadService *uploadService.UploadService
 }
 
-func NewVideoUpload() *UploadManagerService {
-	return &UploadManagerService{}
+func NewVideoUpload(uploadService *uploadService.UploadService) *UploadManagerFacadeService {
+	return &UploadManagerFacadeService{UploadService: uploadService}
 }
 
-func (u *UploadManagerService) Execute() error {
-
+func (u *UploadManagerFacadeService) Execute() error {
+	return nil
 }
