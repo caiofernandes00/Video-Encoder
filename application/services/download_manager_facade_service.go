@@ -1,6 +1,7 @@
 package services
 
 import (
+	downloadService "encoder/application/services/download_service"
 	"github.com/joho/godotenv"
 	"log"
 )
@@ -10,10 +11,10 @@ type DownloadManagerFacadeUseCase interface {
 }
 
 type DownloadManagerFacadeService struct {
-	DownloadUseCase        DownloadUseCase
-	FragmentUseCase        FragmentUseCase
-	EncodeUseCase          EncodeUseCase
-	RemoveTempFilesUseCase RemoveTempFilesUseCase
+	DownloadUseCase        downloadService.DownloadUseCase
+	FragmentUseCase        downloadService.FragmentUseCase
+	EncodeUseCase          downloadService.EncodeUseCase
+	RemoveTempFilesUseCase downloadService.RemoveTempFilesUseCase
 }
 
 func init() {
@@ -24,10 +25,10 @@ func init() {
 }
 
 func NewDownloadManagerFacadeService(
-	downloadUseCase DownloadUseCase,
-	fragmentUseCase FragmentUseCase,
-	encodeUseCase EncodeUseCase,
-	removeTempFilesUseCase RemoveTempFilesUseCase,
+	downloadUseCase downloadService.DownloadUseCase,
+	fragmentUseCase downloadService.FragmentUseCase,
+	encodeUseCase downloadService.EncodeUseCase,
+	removeTempFilesUseCase downloadService.RemoveTempFilesUseCase,
 ) DownloadManagerFacadeService {
 	return DownloadManagerFacadeService{
 		DownloadUseCase:        downloadUseCase,

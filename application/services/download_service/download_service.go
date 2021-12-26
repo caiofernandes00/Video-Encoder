@@ -1,4 +1,4 @@
-package services
+package download_service
 
 import (
 	"cloud.google.com/go/storage"

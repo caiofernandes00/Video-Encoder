@@ -1,4 +1,4 @@
-package services
+package download_service
 
 import (
 	"encoder/application/utils"
