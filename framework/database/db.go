@@ -6,6 +6,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	_ "github.com/lib/pq"
 	"log"
+	"os"
+	"strconv"
 )
 
 type Database struct {
@@ -19,25 +21,27 @@ type Database struct {
 	Env           string
 }
 
-const (
-	DbTypeTest    = "sqlite3"  // os.GetEnv("DB_TYPE_TEST")
-	TestEnv       = "Test"     // os.GetEnv("DB_TYPE_TEST")
-	DsnTest       = ":memory:" // os.GetEnv("DSN_TEST")
-	Debug         = true       // os.GetEnv("DEBUG")
-	AutoMigrateDb = true       // os.GetEnv("AUTO_MIGRATE_DB")
-)
-
 func NewDb() *Database {
 	return &Database{}
 }
 
 func NewDbTest() *gorm.DB {
+	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
+	if err != nil {
+		log.Fatalf("failed to parse DEBUG env to boolean")
+	}
+
+	autoMigrate, err := strconv.ParseBool(os.Getenv("AUTO_MIGRATE_DB"))
+	if err != nil {
+		log.Fatalf("failed to parse AUTO_MIGRATE_DB env variable to boolean")
+	}
+
 	dbInstance := NewDb()
-	dbInstance.Env = TestEnv
-	dbInstance.DbTypeTest = DbTypeTest
-	dbInstance.DsnTest = DsnTest
-	dbInstance.AutoMigrateDb = AutoMigrateDb
-	dbInstance.Debug = Debug
+	dbInstance.Env = os.Getenv("ENV")
+	dbInstance.DbTypeTest = os.Getenv("DB_TYPE_TEST")
+	dbInstance.DsnTest = os.Getenv("DSN_TEST")
+	dbInstance.AutoMigrateDb = autoMigrate
+	dbInstance.Debug = debug
 
 	connection, err := dbInstance.Connect()
 
@@ -51,7 +55,7 @@ func NewDbTest() *gorm.DB {
 func (d *Database) Connect() (*gorm.DB, error) {
 	var err error
 
-	if d.Env != TestEnv {
+	if d.Env != "test" {
 		d.Db, err = gorm.Open(d.DbType, d.Dsn)
 	} else {
 		d.Db, err = gorm.Open(d.DbTypeTest, d.DsnTest)
