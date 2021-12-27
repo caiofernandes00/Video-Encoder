@@ -20,7 +20,7 @@ type UploadWorkersService struct {
 	UploadUseCase UploadUseCase
 }
 
-func NewProcessUploadService(uploadUseCase *UploadService, paths []string, videoPath string) *UploadWorkersService {
+func NewUploadWorkersService(uploadUseCase *UploadService, paths []string, videoPath string) *UploadWorkersService {
 	return &UploadWorkersService{
 		Paths: paths, VideoPath: videoPath, UploadUseCase: uploadUseCase,
 	}

@@ -17,8 +17,8 @@ type UploadService struct {
 	OutputBucket string
 }
 
-func NewUploadService() *UploadService {
-	return &UploadService{}
+func NewUploadService(outputBucket string) *UploadService {
+	return &UploadService{OutputBucket: outputBucket}
 }
 
 func (up *UploadService) Execute(objectPath string, client *storage.Client, ctx context.Context) error {

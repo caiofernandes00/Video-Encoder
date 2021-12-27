@@ -5,6 +5,7 @@ import (
 	"encoder/application/services/download_service"
 	"encoder/application/services/upload_service"
 	"encoder/domain"
+	"os"
 )
 
 type JobUseCase interface {
@@ -18,13 +19,16 @@ type JobService struct {
 	FragmentUseCase        download_service.FragmentUseCase
 	EncodeUseCase          download_service.EncodeUseCase
 	RemoveTempFilesUseCase download_service.RemoveTempFilesUseCase
-	UploadUseCase          upload_service.UploadUseCase
 	UploadWorkersUseCase   upload_service.UploadWorkersUseCase
 }
 
 const (
-	FailedStatus = "FAILED"
-	Downloading  = "DOWNLOADING"
+	FailedStatus        = "FAILED"
+	DownloadingStatus   = "DOWNLOADING"
+	FragmentingStatus   = "FRAGMENTING"
+	EncodingStatus      = "ENCODING"
+	RemovingFilesStatus = "REMOVING_REMAINING_STATUS"
+	UploadingStatus     = "UPLOADING"
 )
 
 func NewJobService(
@@ -34,7 +38,6 @@ func NewJobService(
 	fragmentUseCase download_service.FragmentUseCase,
 	encodeUseCase download_service.EncodeUseCase,
 	removeTempFilesUseCase download_service.RemoveTempFilesUseCase,
-	uploadUseCase upload_service.UploadUseCase,
 	uploadWorkersUseCase upload_service.UploadWorkersUseCase,
 ) *JobService {
 	return &JobService{
@@ -44,7 +47,6 @@ func NewJobService(
 		FragmentUseCase:        fragmentUseCase,
 		EncodeUseCase:          encodeUseCase,
 		RemoveTempFilesUseCase: removeTempFilesUseCase,
-		UploadUseCase:          uploadUseCase,
 		UploadWorkersUseCase:   uploadWorkersUseCase,
 	}
 }
@@ -52,11 +54,56 @@ func NewJobService(
 func (j *JobService) Start() error {
 	var err error
 
-	err = j.changeJobStatus(Downloading)
+	err = j.changeJobStatus(DownloadingStatus)
 
 	if err != nil {
 		return j.failJob(err)
 	}
+
+	err = j.DownloadUseCase.Execute(os.Getenv("BUCKET_NAME"))
+	if err != nil {
+		return j.failJob(err)
+	}
+	err = j.changeJobStatus(FragmentingStatus)
+	if err != nil {
+		return j.failJob(err)
+	}
+
+	err = j.FragmentUseCase.Execute()
+	if err != nil {
+		return j.failJob(err)
+	}
+	err = j.changeJobStatus(FragmentingStatus)
+	if err != nil {
+		return j.failJob(err)
+	}
+
+	err = j.EncodeUseCase.Execute()
+	if err != nil {
+		return j.failJob(err)
+	}
+	err = j.changeJobStatus(EncodingStatus)
+	if err != nil {
+		return j.failJob(err)
+	}
+
+	err = j.RemoveTempFilesUseCase.Execute()
+	if err != nil {
+		return j.failJob(err)
+	}
+	err = j.changeJobStatus(RemovingFilesStatus)
+	if err != nil {
+		return j.failJob(err)
+	}
+
+	//err = j.UploadWorkersUseCase.Execute()
+	//if err != nil {
+	//	return j.failJob(err)
+	//}
+	//err = j.changeJobStatus(UploadingStatus)
+	//if err != nil {
+	//	return j.failJob(err)
+	//}
 
 	return nil
 }
@@ -84,4 +131,13 @@ func (j *JobService) failJob(error error) error {
 	}
 
 	return nil
+}
+
+func (j *JobService) performUpload() error {
+
+	err := j.changeJobStatus(UploadingStatus)
+	if err != nil {
+		return j.failJob(err)
+	}
+
 }
