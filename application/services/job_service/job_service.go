@@ -1,4 +1,4 @@
-package services
+package job_service
 
 import (
 	"encoder/application/repositories"
