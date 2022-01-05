@@ -1,15 +1,16 @@
 module encoder
 
-go 1.17
+go 1.13
 
 require (
 	cloud.google.com/go/storage v1.18.2
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/jinzhu/gorm v1.9.16
-	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.1.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420
 )
 
 require (
@@ -23,7 +24,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420 // indirect
 	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1 // indirect
 	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678 // indirect
 	golang.org/x/text v0.3.6 // indirect
