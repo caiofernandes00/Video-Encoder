@@ -10,6 +10,16 @@ func init() {
 	govalidator.SetFieldsRequiredByDefault(true)
 }
 
+const (
+	StatusFailed        = "FAILED"
+	StatusDownloading   = "DOWNLOADING"
+	StatusFragmenting   = "FRAGMENTING"
+	StatusEncoding      = "ENCODING"
+	StatusRemovingFiles = "REMOVING_REMAINING_FILES"
+	StatusUploading     = "UPLOADING"
+	StatusFinished      = "FINISHED"
+)
+
 type Video struct {
 	ID         string    `json:"encoded_video_folder" valid:"uuid" gorm:"type:uuid;primary_key"`
 	ResourceID string    `json:"resource_id" valid:"notnull" gorm:"type:varchar(255)"`

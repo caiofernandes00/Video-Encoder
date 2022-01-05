@@ -2,6 +2,7 @@ package upload_service
 
 import (
 	"cloud.google.com/go/storage"
+	"encoder/application/utils"
 	"golang.org/x/net/context"
 	"io/fs"
 	"log"
@@ -20,9 +21,9 @@ type UploadWorkersService struct {
 	UploadUseCase UploadUseCase
 }
 
-func NewUploadWorkersService(uploadUseCase *UploadService, paths []string, videoPath string) *UploadWorkersService {
+func NewUploadWorkersService(uploadUseCase *UploadService, videoPath string) *UploadWorkersService {
 	return &UploadWorkersService{
-		Paths: paths, VideoPath: videoPath, UploadUseCase: uploadUseCase,
+		VideoPath: videoPath, UploadUseCase: uploadUseCase,
 	}
 }
 
@@ -41,10 +42,6 @@ func (uw *UploadWorkersService) Execute(concurrency int, doneUpload chan string)
 		return err
 	}
 
-	for process := 0; process < concurrency; process++ {
-		go uw.uploadWorker(in, returnChan, uploadClient, ctx)
-	}
-
 	go func() {
 		for x := 0; x < len(uw.Paths); x++ {
 			in <- x
@@ -52,14 +49,22 @@ func (uw *UploadWorkersService) Execute(concurrency int, doneUpload chan string)
 		close(in)
 	}()
 
+	for process := 0; process < concurrency; process++ {
+		go uw.uploadWorker(in, returnChan, uploadClient, ctx)
+	}
+
+	uw.verifyReturnChan(returnChan, doneUpload)
+
+	return nil
+}
+
+func (uw *UploadWorkersService) verifyReturnChan(returnChan chan string, doneUpload chan string) {
 	for r := range returnChan {
 		if r != "" {
 			doneUpload <- r
 			break
 		}
 	}
-
-	return nil
 }
 
 func (uw *UploadWorkersService) uploadWorker(in chan int, returnChan chan string, uploadClient *storage.Client, ctx context.Context) {
@@ -75,7 +80,7 @@ func (uw *UploadWorkersService) uploadWorker(in chan int, returnChan chan string
 		returnChan <- ""
 	}
 
-	returnChan <- "uploaded completed"
+	returnChan <- utils.UploadCompleted
 }
 
 func (uw *UploadWorkersService) loadPaths() error {
