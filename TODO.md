@@ -1,0 +1,1 @@
+- [] Move interfaces declarations to domain

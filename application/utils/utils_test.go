@@ -13,7 +13,7 @@ func Test_ValidJson(t *testing.T) {
 				"status": "pending"
 			}`
 
-	err := isJson(json)
+	err := IsJson(json)
 	require.Nil(t, err)
 }
 
@@ -21,6 +21,6 @@ func Test_InvalidJson(t *testing.T) {
 
 	json := `Invalid Json`
 
-	err := isJson(json)
+	err := IsJson(json)
 	require.Error(t, err)
 }

@@ -3,6 +3,7 @@ package utils
 import (
 	"cloud.google.com/go/storage"
 	"context"
+	"encoding/json"
 	"log"
 )
 
@@ -21,4 +22,14 @@ func GetClientStorage() (*storage.Client, context.Context, error) {
 	}
 
 	return client, ctx, err
+}
+
+func IsJson(s string) error {
+	var js struct{}
+
+	if err := json.Unmarshal([]byte(s), &js); err != nil {
+		return err
+	}
+
+	return nil
 }
