@@ -3,12 +3,11 @@ package download_service
 import (
 	"encoder/application/utils"
 	"encoder/domain"
-	"os"
 	"os/exec"
 )
 
 type FragmentUseCase interface {
-	Execute() error
+	Execute(sourceMp4File string, targetFragFile string) error
 }
 
 type FragmentService struct {
@@ -19,11 +18,8 @@ func NewFragmentService(v *domain.Video) *FragmentService {
 	return &FragmentService{Video: v}
 }
 
-func (f *FragmentService) Execute() error {
-	source := os.Getenv(utils.LocalStoragePath) + "/" + f.Video.ID + utils.Mp4Format
-	target := os.Getenv(utils.LocalStoragePath) + "/" + f.Video.ID + utils.FragmentCommand
-
-	cmd := exec.Command(utils.FragmentCommand, source, target)
+func (f *FragmentService) Execute(sourceMp4File string, targetFragFile string) error {
+	cmd := exec.Command(utils.FragmentCommand, sourceMp4File, targetFragFile)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return err

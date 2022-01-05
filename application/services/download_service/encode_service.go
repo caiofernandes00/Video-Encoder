@@ -8,7 +8,7 @@ import (
 )
 
 type EncodeUseCase interface {
-	Execute() error
+	Execute(targetDir string) error
 }
 
 type EncodeService struct {
@@ -19,8 +19,7 @@ func NewEncodeService(v *domain.Video) *EncodeService {
 	return &EncodeService{Video: v}
 }
 
-func (e *EncodeService) Execute() error {
-	targetDir := os.Getenv(utils.LocalStoragePath) + "/" + e.Video.ID
+func (e *EncodeService) Execute(targetDir string) error {
 
 	err := os.Mkdir(targetDir, os.ModePerm)
 	if err != nil {

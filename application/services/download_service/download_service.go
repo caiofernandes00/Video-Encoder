@@ -3,7 +3,6 @@ package download_service
 import (
 	"cloud.google.com/go/storage"
 	"context"
-	"encoder/application/utils"
 	"encoder/domain"
 	"io/ioutil"
 	"log"
@@ -11,7 +10,7 @@ import (
 )
 
 type DownloadUseCase interface {
-	Execute(bucketName string) error
+	Execute(bucketName string, mp4TargetDir string, client *storage.Client, ctx context.Context) error
 }
 
 type DownloadService struct {
@@ -22,13 +21,7 @@ func NewDownloadService(v *domain.Video) *DownloadService {
 	return &DownloadService{Video: v}
 }
 
-func (d *DownloadService) Execute(bucketName string) error {
-	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
-	if err != nil {
-		return err
-	}
-
+func (d *DownloadService) Execute(bucketName string, mp4TargetDir string, client *storage.Client, ctx context.Context) error {
 	bkt := client.Bucket(bucketName)
 	obj := bkt.Object(d.Video.FilePath)
 	reader, err := obj.NewReader(ctx)
@@ -41,7 +34,7 @@ func (d *DownloadService) Execute(bucketName string) error {
 		return err
 	}
 
-	file, err := os.Create(os.Getenv(utils.LocalStoragePath) + "/" + d.Video.ID + ".mp4")
+	file, err := os.Create(mp4TargetDir)
 	if err != nil {
 		return err
 	}

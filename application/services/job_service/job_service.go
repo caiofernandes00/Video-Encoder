@@ -1,6 +1,8 @@
 package job_service
 
 import (
+	"cloud.google.com/go/storage"
+	"context"
 	"encoder/application/repositories"
 	"encoder/application/services/download_service"
 	"encoder/application/services/upload_service"
@@ -28,6 +30,7 @@ type JobService struct {
 
 func NewJobService(
 	job *domain.Job,
+	video *domain.Video,
 	jobRepository repositories.JobRepository,
 	downloadUseCase download_service.DownloadUseCase,
 	fragmentUseCase download_service.FragmentUseCase,
@@ -37,6 +40,7 @@ func NewJobService(
 ) *JobService {
 	return &JobService{
 		Job:                    job,
+		Video:                  video,
 		JobRepository:          jobRepository,
 		DownloadUseCase:        downloadUseCase,
 		FragmentUseCase:        fragmentUseCase,
@@ -47,13 +51,20 @@ func NewJobService(
 }
 
 func (j *JobService) Start() error {
-	var err error
+	client, ctx, err := utils.GetClientStorage()
+	if err != nil {
+		return err
+	}
+
+	mp4TargetFile := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID + utils.Mp4Format
+	encodeTargetDir := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID
+	fragTargetFile := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID + utils.FragmentCommand
 
 	err = j.changeJobStatus(domain.StatusDownloading)
 	if err != nil {
 		return j.failJob(err)
 	}
-	err = j.DownloadUseCase.Execute(os.Getenv(utils.InputBucketName))
+	err = j.DownloadUseCase.Execute(os.Getenv(utils.InputBucketName), mp4TargetFile, client, ctx)
 	if err != nil {
 		return j.failJob(err)
 	}
@@ -62,7 +73,7 @@ func (j *JobService) Start() error {
 	if err != nil {
 		return j.failJob(err)
 	}
-	err = j.FragmentUseCase.Execute()
+	err = j.FragmentUseCase.Execute(mp4TargetFile, fragTargetFile)
 	if err != nil {
 		return j.failJob(err)
 	}
@@ -71,7 +82,7 @@ func (j *JobService) Start() error {
 	if err != nil {
 		return j.failJob(err)
 	}
-	err = j.EncodeUseCase.Execute()
+	err = j.EncodeUseCase.Execute(encodeTargetDir)
 	if err != nil {
 		return j.failJob(err)
 	}
@@ -80,7 +91,7 @@ func (j *JobService) Start() error {
 	if err != nil {
 		return j.failJob(err)
 	}
-	err = j.performUpload()
+	err = j.performUpload(client, ctx)
 	if err != nil {
 		j.failJob(err)
 	}
@@ -127,7 +138,7 @@ func (j *JobService) failJob(error error) error {
 	return nil
 }
 
-func (j *JobService) performUpload() error {
+func (j *JobService) performUpload(client *storage.Client, ctx context.Context) error {
 
 	err := j.changeJobStatus(domain.StatusUploading)
 	if err != nil {
@@ -138,10 +149,10 @@ func (j *JobService) performUpload() error {
 	concurrency, _ := strconv.Atoi(os.Getenv(utils.ConcurrencyUpload))
 	doneUpload := make(chan string)
 
-	uploadService := upload_service.NewUploadService(utils.OutputBucketName)
+	uploadService := upload_service.NewUploadService(j.Video)
 	uploadWorkers := upload_service.NewUploadWorkersService(uploadService, videoPath)
 
-	go uploadWorkers.Execute(concurrency, doneUpload)
+	go uploadWorkers.Execute(concurrency, doneUpload, client, ctx)
 
 	var uploadResult string
 	uploadResult = <-doneUpload
