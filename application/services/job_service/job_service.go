@@ -16,6 +16,7 @@ import (
 
 type JobUseCase interface {
 	Start() error
+	Insert() error
 }
 
 type JobService struct {
@@ -109,6 +110,16 @@ func (j *JobService) Start() error {
 	err = j.changeJobStatus(domain.StatusFinished)
 	if err != nil {
 		return j.failJob(err)
+	}
+
+	return nil
+}
+
+func (j *JobService) Insert() error {
+	_, err := j.JobRepository.Insert(j.Job)
+
+	if err != nil {
+		return err
 	}
 
 	return nil
