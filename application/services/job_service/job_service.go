@@ -1,7 +1,6 @@
 package job_service
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"encoder/application/repositories"
 	"encoder/application/services/download_service"
@@ -11,6 +10,8 @@ import (
 	"errors"
 	"os"
 	"strconv"
+
+	"cloud.google.com/go/storage"
 )
 
 type JobUseCase interface {
@@ -91,7 +92,7 @@ func (j *JobService) Start() error {
 	if err != nil {
 		return j.failJob(err)
 	}
-	err = j.performUpload(client, ctx)
+	err = j.performUpload(encodeTargetDir, client, ctx)
 	if err != nil {
 		j.failJob(err)
 	}
@@ -138,14 +139,13 @@ func (j *JobService) failJob(error error) error {
 	return nil
 }
 
-func (j *JobService) performUpload(client *storage.Client, ctx context.Context) error {
+func (j *JobService) performUpload(videoPath string, client *storage.Client, ctx context.Context) error {
 
 	err := j.changeJobStatus(domain.StatusUploading)
 	if err != nil {
 		return j.failJob(err)
 	}
 
-	videoPath := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID
 	concurrency, _ := strconv.Atoi(os.Getenv(utils.ConcurrencyUpload))
 	doneUpload := make(chan string)
 

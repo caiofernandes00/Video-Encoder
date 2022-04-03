@@ -1,12 +1,13 @@
 package download_service
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"encoder/domain"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"cloud.google.com/go/storage"
 )
 
 type DownloadUseCase interface {
@@ -22,9 +23,7 @@ func NewDownloadService(v *domain.Video) *DownloadService {
 }
 
 func (d *DownloadService) Execute(bucketName string, mp4TargetDir string, client *storage.Client, ctx context.Context) error {
-	bkt := client.Bucket(bucketName)
-	obj := bkt.Object(d.Video.FilePath)
-	reader, err := obj.NewReader(ctx)
+	reader, err := client.Bucket(bucketName).Object(d.Video.FilePath).NewReader(ctx)
 	if err != nil {
 		return err
 	}

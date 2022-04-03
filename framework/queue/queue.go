@@ -1,9 +1,10 @@
 package queue
 
 import (
-	"github.com/streadway/amqp"
 	"log"
 	"os"
+
+	"github.com/streadway/amqp"
 )
 
 type RabbitMQ struct {

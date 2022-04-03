@@ -1,11 +1,12 @@
 package upload_service
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"encoder/domain"
 	"io"
 	"os"
+
+	"cloud.google.com/go/storage"
 )
 
 type UploadUseCase interface {

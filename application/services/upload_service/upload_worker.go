@@ -1,13 +1,14 @@
 package upload_service
 
 import (
-	"cloud.google.com/go/storage"
 	"encoder/application/utils"
-	"golang.org/x/net/context"
 	"io/fs"
 	"log"
 	"path/filepath"
 	"runtime"
+
+	"cloud.google.com/go/storage"
+	"golang.org/x/net/context"
 )
 
 type UploadWorkersUseCase interface {

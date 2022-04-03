@@ -21,7 +21,7 @@ func NewRemoveTempFilesService(v *domain.Video) *RemoveTempFilesService {
 
 func (v *RemoveTempFilesService) Execute(mp4File string, fragFile string, encodeDir string) error {
 
-	err := v.removeFile(mp4File)
+	err := v.removeFile(mp4File, fragFile)
 	if err != nil {
 		return err
 	}
