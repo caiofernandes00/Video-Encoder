@@ -19,6 +19,8 @@ func NewFragmentService(v *domain.Video) *FragmentService {
 }
 
 func (f *FragmentService) Execute(sourceMp4File string, targetFragFile string) error {
+	println("Source mp4 file: " + sourceMp4File)
+	println("Target frag file: " + targetFragFile)
 	cmd := exec.Command(utils.FragmentCommand, sourceMp4File, targetFragFile)
 	output, err := cmd.CombinedOutput()
 	if err != nil {

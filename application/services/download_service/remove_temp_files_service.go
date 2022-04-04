@@ -8,7 +8,7 @@ import (
 )
 
 type RemoveTempFilesUseCase interface {
-	Execute() error
+	Execute(mp4File string, fragFile string, encodeDir string) error
 }
 
 type RemoveTempFilesService struct {

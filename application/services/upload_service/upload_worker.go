@@ -2,8 +2,8 @@ package upload_service
 
 import (
 	"encoder/application/utils"
-	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -80,7 +80,7 @@ func (uw *UploadWorkersService) uploadWorker(in chan int, returnChan chan string
 }
 
 func (uw *UploadWorkersService) loadPaths() error {
-	err := filepath.Walk(uw.VideoPathDir, func(path string, info fs.FileInfo, err error) error {
+	err := filepath.Walk(uw.VideoPathDir, func(path string, info os.FileInfo, err error) error {
 
 		if !info.IsDir() {
 			uw.FilePaths = append(uw.FilePaths, path)

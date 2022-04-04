@@ -56,7 +56,7 @@ func (j *JobService) Start() error {
 
 	mp4TargetFile := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID + utils.Mp4Format
 	encodeTargetDir := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID
-	fragTargetFile := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID + utils.FragmentCommand
+	fragTargetFile := os.Getenv(utils.LocalStoragePath) + "/" + j.Video.ID + utils.FragFile
 
 	err = j.changeJobStatus(domain.StatusDownloading)
 	if err != nil {
@@ -71,6 +71,7 @@ func (j *JobService) Start() error {
 	if err != nil {
 		return j.failJob(err)
 	}
+
 	err = j.FragmentUseCase.Execute(mp4TargetFile, fragTargetFile)
 	if err != nil {
 		return j.failJob(err)
@@ -98,7 +99,7 @@ func (j *JobService) Start() error {
 	if err != nil {
 		return j.failJob(err)
 	}
-	err = j.RemoveTempFilesUseCase.Execute()
+	err = j.RemoveTempFilesUseCase.Execute(mp4TargetFile, fragTargetFile, encodeTargetDir)
 	if err != nil {
 		return j.failJob(err)
 	}

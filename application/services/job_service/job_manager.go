@@ -44,7 +44,7 @@ func NewJobManagerService(db *gorm.DB, rabbitMQ *queue.RabbitMQ, jobReturnChanne
 	}
 }
 
-func (j *JobManagerService) Start(cn *amqp.Channel) {
+func (j *JobManagerService) Start(ch *amqp.Channel) {
 
 	concurrency, err := strconv.Atoi(os.Getenv(utils.ConcurrencyWorkers))
 	if err != nil {
@@ -71,9 +71,9 @@ func (j *JobManagerService) Start(cn *amqp.Channel) {
 
 func (j *JobManagerService) notifySuccess(jobResult JobWorkerService, ch *amqp.Channel) error {
 
-	Mutex.Lock()
+	// Mutex.Lock()
 	jobJson, err := json.Marshal(jobResult.Job)
-	Mutex.Unlock()
+	// Mutex.Unlock()
 
 	if err != nil {
 		return err
