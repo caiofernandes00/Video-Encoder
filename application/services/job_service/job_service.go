@@ -20,9 +20,11 @@ type JobUseCase interface {
 }
 
 type JobService struct {
-	Job                    *domain.Job
-	Video                  *domain.Video
-	JobRepository          repositories.JobRepository
+	Job             *domain.Job
+	Video           *domain.Video
+	VideoRepository repositories.VideoRepository
+	JobRepository   repositories.JobRepository
+
 	DownloadUseCase        download_service.DownloadUseCase
 	FragmentUseCase        download_service.FragmentUseCase
 	EncodeUseCase          download_service.EncodeUseCase
@@ -33,26 +35,20 @@ type JobService struct {
 func NewJobService(
 	job *domain.Job,
 	video *domain.Video,
-	jobRepository repositories.JobRepository,
-	downloadUseCase download_service.DownloadUseCase,
-	fragmentUseCase download_service.FragmentUseCase,
-	encodeUseCase download_service.EncodeUseCase,
-	removeTempFilesUseCase download_service.RemoveTempFilesUseCase,
-	uploadWorkersUseCase upload_service.UploadWorkersUseCase,
+	VideoRepository repositories.VideoRepository,
+	JobRepository repositories.JobRepository,
 ) *JobService {
 	return &JobService{
-		Job:                    job,
-		Video:                  video,
-		JobRepository:          jobRepository,
-		DownloadUseCase:        downloadUseCase,
-		FragmentUseCase:        fragmentUseCase,
-		EncodeUseCase:          encodeUseCase,
-		RemoveTempFilesUseCase: removeTempFilesUseCase,
-		UploadWorkersUseCase:   uploadWorkersUseCase,
+		Job:             job,
+		Video:           video,
+		VideoRepository: VideoRepository,
+		JobRepository:   JobRepository,
 	}
 }
 
 func (j *JobService) Start() error {
+	j.getServices()
+
 	client, ctx, err := utils.GetClientStorage()
 	if err != nil {
 		return err
@@ -173,4 +169,11 @@ func (j *JobService) performUpload(videoPath string, client *storage.Client, ctx
 	}
 
 	return err
+}
+
+func (j *JobService) getServices() {
+	j.DownloadUseCase = download_service.NewDownloadService(j.Video)
+	j.FragmentUseCase = download_service.NewFragmentService(j.Video)
+	j.EncodeUseCase = download_service.NewEncodeService(j.Video)
+	j.RemoveTempFilesUseCase = download_service.NewRemoveTempFilesService(j.Video)
 }

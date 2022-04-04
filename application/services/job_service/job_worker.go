@@ -2,8 +2,6 @@ package job_service
 
 import (
 	"encoder/application/repositories"
-	"encoder/application/services/download_service"
-	"encoder/application/services/upload_service"
 	"encoder/application/services/video_service"
 	"encoder/application/utils"
 	"encoder/domain"
@@ -19,47 +17,19 @@ type JobWorkerUseCase interface {
 }
 
 type JobWorkerService struct {
-	Job          *domain.Job
-	Video        *domain.Video
-	VideoUseCase video_service.VideoUseCase
-	JobUseCase   JobUseCase
-	Error        error
-
+	Job     *domain.Job
+	Video   *domain.Video
+	Error   error
 	Message *amqp.Delivery
 
 	VideoRepository repositories.VideoRepository
-
-	JobRepository          repositories.JobRepository
-	DownloadUseCase        download_service.DownloadUseCase
-	FragmentUseCase        download_service.FragmentUseCase
-	EncodeUseCase          download_service.EncodeUseCase
-	RemoveTempFilesUseCase download_service.RemoveTempFilesUseCase
-	UploadWorkersUseCase   upload_service.UploadWorkersUseCase
+	JobRepository   repositories.JobRepository
 }
 
-func NewJobWorkerService(
-	message *amqp.Delivery,
-
-	videoRepository repositories.VideoRepository,
-
-	jobRepository repositories.JobRepository,
-	downloadUseCase download_service.DownloadUseCase,
-	fragmentUseCase download_service.FragmentUseCase,
-	encodeUseCase download_service.EncodeUseCase,
-	removeTempFilesUseCase download_service.RemoveTempFilesUseCase,
-	uploadWorkersUseCase upload_service.UploadWorkersUseCase,
-) *JobWorkerService {
+func NewJobWorkerService(videoRepository repositories.VideoRepository, jobRepository repositories.JobRepository) *JobWorkerService {
 	return &JobWorkerService{
-		Message: message,
-
 		VideoRepository: videoRepository,
-
-		JobRepository:          jobRepository,
-		DownloadUseCase:        downloadUseCase,
-		FragmentUseCase:        fragmentUseCase,
-		EncodeUseCase:          encodeUseCase,
-		RemoveTempFilesUseCase: removeTempFilesUseCase,
-		UploadWorkersUseCase:   uploadWorkersUseCase,
+		JobRepository:   jobRepository,
 	}
 }
 
@@ -78,8 +48,8 @@ func (jw *JobWorkerService) Execute(messageChan chan amqp.Delivery, returnChan c
 			continue
 		}
 
-		jw.createVideoService()
-		err = jw.VideoUseCase.InsertVideo()
+		videoUseCase := jw.createVideoService()
+		err = videoUseCase.InsertVideo()
 		if err != nil {
 			returnChan <- returnJobResult(&domain.Job{}, &message, err)
 			continue
@@ -91,14 +61,14 @@ func (jw *JobWorkerService) Execute(messageChan chan amqp.Delivery, returnChan c
 			continue
 		}
 
-		jw.createJobService()
-		err = jw.JobUseCase.Insert()
+		jobUseCase := jw.createJobService()
+		err = jobUseCase.Insert()
 		if err != nil {
 			returnChan <- returnJobResult(&domain.Job{}, &message, err)
 			continue
 		}
 
-		err = jw.JobUseCase.Start()
+		err = jobUseCase.Start()
 		if err != nil {
 			returnChan <- returnJobResult(&domain.Job{}, &message, err)
 			continue
@@ -137,14 +107,12 @@ func (jw *JobWorkerService) createJob(message amqp.Delivery) error {
 	return nil
 }
 
-func (jw *JobWorkerService) createVideoService() {
-	videoUseCase := video_service.NewVideoService(jw.Video, jw.VideoRepository)
-	jw.VideoUseCase = videoUseCase
+func (jw *JobWorkerService) createVideoService() video_service.VideoUseCase {
+	return video_service.NewVideoService(jw.Video, jw.VideoRepository)
 }
 
-func (jw *JobWorkerService) createJobService() {
-	jobUseCase := NewJobService(jw.Job, jw.Video, jw.JobRepository, jw.DownloadUseCase, jw.FragmentUseCase, jw.EncodeUseCase, jw.RemoveTempFilesUseCase, jw.UploadWorkersUseCase)
-	jw.JobUseCase = jobUseCase
+func (jw *JobWorkerService) createJobService() JobUseCase {
+	return NewJobService(jw.Job, jw.Video, jw.VideoRepository, jw.JobRepository)
 }
 
 func returnJobResult(job *domain.Job, message *amqp.Delivery, err error) JobWorkerService {

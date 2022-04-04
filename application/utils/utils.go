@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"encoding/json"
 	"log"
+
+	"cloud.google.com/go/storage"
 )
 
 func PrintOutput(out []byte) {

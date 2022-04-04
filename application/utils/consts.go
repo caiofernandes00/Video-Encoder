@@ -7,9 +7,14 @@ const (
 	Mp4Format        = ".mp4"
 	FragFile         = ".frag"
 	UploadCompleted  = "upload completed"
+	ContentTypeJson  = "application/json"
 
 	// Env variables
-	InputBucketName   = "INPUT_BUCKET_NAME"
-	OutputBucketName  = "OUTPUT_BUCKET_NAME"
-	ConcurrencyUpload = "CONCURRENCY_UPLOAD"
+	InputBucketName    = "INPUT_BUCKET_NAME"
+	OutputBucketName   = "OUTPUT_BUCKET_NAME"
+	ConcurrencyUpload  = "CONCURRENCY_UPLOAD"
+	ConcurrencyWorkers = "CONCURRENCY_WORKERS"
+
+	RabbitMQNotificationEx         = "RABBITMQ_NOTIFICATION_EX"
+	RabbitMQNotificationRoutingKey = "RABBITMQ_NOTIFICATION_ROUTING_KEY"
 )
