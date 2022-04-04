@@ -1,13 +1,15 @@
 package database
 
 import (
+	"encoder/application/utils"
 	"encoder/domain"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/lib/pq"
 )
 
 type Database struct {
@@ -26,20 +28,20 @@ func NewDb() *Database {
 }
 
 func NewDbTest() *gorm.DB {
-	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
+	debug, err := strconv.ParseBool(os.Getenv(utils.Debug))
 	if err != nil {
 		log.Fatalf("failed to parse DEBUG env to boolean")
 	}
 
-	autoMigrate, err := strconv.ParseBool(os.Getenv("AUTO_MIGRATE_DB"))
+	autoMigrate, err := strconv.ParseBool(os.Getenv(utils.AutoMigrateDb))
 	if err != nil {
 		log.Fatalf("failed to parse AUTO_MIGRATE_DB env variable to boolean")
 	}
 
 	dbInstance := NewDb()
-	dbInstance.Env = os.Getenv("ENV")
-	dbInstance.DbTypeTest = os.Getenv("DB_TYPE_TEST")
-	dbInstance.DsnTest = os.Getenv("DSN_TEST")
+	dbInstance.Env = os.Getenv(utils.Env)
+	dbInstance.DbTypeTest = os.Getenv(utils.DbTypeTest)
+	dbInstance.DsnTest = os.Getenv(utils.DbType)
 	dbInstance.AutoMigrateDb = autoMigrate
 	dbInstance.Debug = debug
 
